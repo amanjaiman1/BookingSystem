@@ -13,6 +13,12 @@ import AOS from "aos";
 import "aos/dist/aos.css"; // You can also use <link> for styles
 import "./HomeScreen.css"
 
+import Slider from 'react-slick'; // Assuming you are using react-slick for the slider
+import 'antd/dist/antd.css'; // Import Ant Design CSS
+import 'slick-carousel/slick/slick.css'; // Import slick carousel CSS
+import 'slick-carousel/slick/slick-theme.css';
+import { bg1, bg2, bg3, bg4, bg5 } from "../assests";
+
 // ..
 AOS.init({
   duration: 1000,
@@ -89,7 +95,7 @@ function Homescreen() {
         }
       }
       setRooms(tempRooms);
-    } catch (error) {}
+    } catch (error) { }
   }
 
   function filterBySearch() {
@@ -111,61 +117,96 @@ function Homescreen() {
     }
   }
 
-  return (
-    <div className="container">
-      <div className="row bs filterContainer">
-        <div className="col-md-3">
-          <RangePicker format="DD-MM-YYYY" onChange={filterByDate} />
-        </div>
 
-        <div className="col-md-5">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="search rooms"
-            value={searchKey}
-            onChange={(e) => {
-              setSearchKey(e.target.value);
-            }}
-            onKeyUp={filterBySearch}
-          />
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 2000,
+  };
+
+  return (
+    <div className="mainSection">
+
+      <section className="homeSection">
+        <div className="slider">
+          <Slider {...settings} >
+            <div>
+              <img className="imageSlider" src={bg1} alt="" />
+            </div>
+            <div>
+              <img className="imageSlider" src={bg2} alt="" />
+            </div>
+            <div>
+              <img className="imageSlider" src={bg3} alt="" />
+            </div>
+            <div>
+              <img className="imageSlider" src={bg4} alt="" />
+            </div>
+            <div>
+              <img className="imageSlider" src={bg5} alt="" />
+            </div>
+          </Slider>
         </div>
-        <div className="col-md-3">
-          <select
-            className="form-control"
-            value={type}
-            onChange={(e) => {
-              filterByType(e.target.value);
-            }}
-          >
-            <option value="all">All</option>
-            
-            <option value="Wedding">Wedding</option>
+        <div className="filterContainer filter">
+          <div className="row searchFilter">
+            <div className="col-md-3">
+              <RangePicker format="DD-MM-YYYY" onChange={filterByDate} />
+            </div>
+            <div className="col-md-5">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Search rooms"
+                value={searchKey}
+                onChange={(e) => {
+                  setSearchKey(e.target.value);
+                }}
+                onKeyUp={filterBySearch}
+              />
+            </div>
+            <div className="col-md-3">
+              <select
+                className="form-control"
+                value={type}
+                onChange={(e) => {
+                  filterByType(e.target.value);
+                }}
+              >
+                {/* Your select options */}
+                <option value="all">All</option>
+                <option value="Wedding">Wedding</option>
                 <option value="Parties">Parties</option>
                 <option value="Open Mic">Open Mic</option>
                 <option value="Conference">Conference</option>
                 <option value="Club house">Club house</option>
                 <option value="Reception">Reception</option>
                 <option value="Community Hall">Community Hall</option>
-          </select>
+              </select>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div className="row justify-content-center mt-5">
+      <div className="row justify-content-center mt-5 cardsOnly">
         {loading ? (
           <Loader></Loader>
         ) : error.length > 0 ? (
           <Error msg={error}></Error>
         ) : (
-          rooms.map((x) => {
-            return (
-              <div className="col-md-9 mt-3 cardhome" data-aos="flip-down">
+          <div className="card-container">
+            {rooms.map((x) => (
+              <div key={x.id} className="col-md-4 mt-3 cardhome">
                 <Room room={x} fromDate={fromDate} toDate={toDate} />
               </div>
-            );
-          })
+            ))}
+          </div>
         )}
       </div>
+
     </div>
   );
 }
