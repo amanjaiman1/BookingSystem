@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200&display=swap');
+
 .App {
   text-align: left;
 }
@@ -35,4 +37,42 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.primaryText{
+  font-family: "Poppins", sans-serif;
+  font-weight: bold;
+  color: rgb(255, 255, 255);
+  font-size: 80px;
+  
+}
+
+.secondaryText{
+  font-family: "Poppins", sans-serif;
+  font-weight: 200;
+  color: rgb(255, 215, 96);
+  font-size: 80px;
+  
+}
+
+.fade-enter {
+  opacity: 0;
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transition: opacity 300ms ease-in;
+}
+
+.fade-exit {
+  opacity: 1;
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transition: opacity 300ms ease-out;
+}
+
+.Home {
+  
 }

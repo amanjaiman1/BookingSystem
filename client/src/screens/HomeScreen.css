@@ -1,0 +1,11 @@
+.container {
+    margin-top: 200px;
+}
+
+.cardhome {
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .cardhome:hover {
+    transform: scale(1.06);
+  }

@@ -11,6 +11,8 @@ import Error from "../components/Error";
 
 import AOS from "aos";
 import "aos/dist/aos.css"; // You can also use <link> for styles
+import "./HomeScreen.css"
+
 // ..
 AOS.init({
   duration: 1000,
@@ -111,7 +113,7 @@ function Homescreen() {
 
   return (
     <div className="container">
-      <div className="row mt-5 bs">
+      <div className="row bs filterContainer">
         <div className="col-md-3">
           <RangePicker format="DD-MM-YYYY" onChange={filterByDate} />
         </div>
@@ -157,7 +159,7 @@ function Homescreen() {
         ) : (
           rooms.map((x) => {
             return (
-              <div className="col-md-9 mt-3" data-aos="flip-down">
+              <div className="col-md-9 mt-3 cardhome" data-aos="flip-down">
                 <Room room={x} fromDate={fromDate} toDate={toDate} />
               </div>
             );

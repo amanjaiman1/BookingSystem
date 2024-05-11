@@ -5,6 +5,9 @@ import StripeCheckout from "react-stripe-checkout";
 import Swal from "sweetalert2";
 import Loader from "../components/Loader";
 import Error from "../components/Error";
+import { useHistory } from "react-router-dom";
+
+import "./Bookingscreen.css";
 
 function Bookingscreen({ match }) {
   const [loading, setLoading] = useState(true);
@@ -13,44 +16,42 @@ function Bookingscreen({ match }) {
   const [totalAmount, setTotalAmount] = useState(0);
   const [totalDays, setTotalDays] = useState(0);
 
-  const roomid = match.params.roomid;
-  const fromdate = moment(match.params.fromdate, "DD-MM-YYYY");
-  const todate = moment(match.params.todate, "DD-MM-YYYY");
+  const history = useHistory();
+  const redirecttoHome = () => {
+    history.push("/home");
+  };
+
+  const { roomid, fromdate, todate } = match.params;
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("currentUser"));
     if (!user) {
       window.location.href = "/login";
+    } else {
+      fetchRoom();
     }
-    async function fetchMyAPI() {
-      try {
-        setError("");
-        setLoading(true);
-        const data = (
-          await axios.post("/api/rooms/getroombyid", {
-            roomid: match.params.roomid,
-          })
-        ).data;
-        //console.log(data);
-        setRoom(data);
-      } catch (error) {
-        console.log(error);
-        setError(error);
-      }
-      setLoading(false);
-    }
-
-    fetchMyAPI();
   }, []);
 
   useEffect(() => {
-    const totaldays = moment.duration(todate.diff(fromdate)).asDays() + 1;
+    const totaldays = moment.duration(moment(todate, "DD-MM-YYYY").diff(moment(fromdate, "DD-MM-YYYY"))).asDays() + 1;
     setTotalDays(totaldays);
-    setTotalAmount(totalDays * room.rentperday);
+    setTotalAmount(totaldays * room.rentperday);
   }, [room]);
 
+  const fetchRoom = async () => {
+    try {
+      setError("");
+      setLoading(true);
+      const { data } = await axios.post("/api/rooms/getroombyid", { roomid });
+      setRoom(data);
+    } catch (error) {
+      console.log(error);
+      setError("Failed to fetch room details. Please try again later.");
+    }
+    setLoading(false);
+  };
+
   const onToken = async (token) => {
-    console.log(token);
     const bookingDetails = {
       room,
       userid: JSON.parse(localStorage.getItem("currentUser"))._id,
@@ -64,81 +65,70 @@ function Bookingscreen({ match }) {
     try {
       setLoading(true);
       const result = await axios.post("/api/bookings/bookroom", bookingDetails);
-      setLoading(false);
-      Swal.fire(
-        "Congratulations",
-        "Your Room Booked Successfully",
-        "success"
-      ).then((result) => {
+      Swal.fire("Congratulations", "Your Room Booked Successfully", "success").then((result) => {
         window.location.href = "/home";
       });
     } catch (error) {
-      setError(error);
-      Swal.fire("Opps", "Error:" + error, "error");
+      setError("Failed to book room. Please try again later.");
+      Swal.fire("Oops", "Error: " + error.message, "error");
     }
     setLoading(false);
-    //TESTING CARD
-    //https://stripe.com/docs/testing
-    //https://www.npmjs.com/package/react-stripe-checkout
-    // fetch("/save-stripe-token", {
-    //   method: "POST",
-    //   body: JSON.stringify(token),
-    // }).then((response) => {
-    //   response.json().then((data) => {
-    //     alert(`We are in business, ${data.email}`);
-    //   });
-    // });
   };
 
   return (
-    <div className="m-5">
+    <main className="screen-container">
       {loading ? (
-        <Loader></Loader>
-      ) : error.length > 0 ? (
-        <Error msg={error}></Error>
+        <Loader />
+      ) : error ? (
+        <Error msg={error} />
       ) : (
-        <div className="row justify-content-center mt-5 bs">
-          <div className="col-md-6">
-            <h1>{room.name}</h1>
-            <img src={room.imageurls[0]} alt="" className="bigimg" />
+        <div className="booking-container">
+          <div className="room-details">
+            <h1 className="roomName">{room.name}</h1>
+            <hr className="roomLine" />
+            <img src={room.imageurls[0]} alt={room.name} className="room-image" />
+            <div className="booking-info">
+              <h2>Booking Details</h2>
+              <p><strong>Name:</strong> {JSON.parse(localStorage.getItem("currentUser")).name}</p>
+              <p><strong>From Date:</strong> {fromdate}</p>
+              <p><strong>To Date:</strong> {todate}</p>
+              <p><strong>Max Count:</strong> {room.maxcount}</p>
+            </div>
           </div>
-          <div className="col-md-6">
-            <div style={{ textAlign: "right" }}>
-              <h1>Booking Details</h1>
+          <div className="payment-details">
+            <h2>Amount</h2>
+            <div className="amtMain">
+              <div className="subAmt1">
+                <p><strong >Total Days:</strong> </p>
+                <hr className="makeLine" />
+                <p><strong>Rent per day:</strong> </p>
+                <hr className="makeLine" />
+                <p><strong>Total Amount:</strong> </p>
+                <hr className="makeLine" />
+              </div>
+              <div className="subAmt2">
+              <p>{totalDays}</p>
               <hr />
-              <b>
-                <p>
-                  Name : {JSON.parse(localStorage.getItem("currentUser")).name}
-                </p>
-                <p>From Date : {match.params.fromdate}</p>
-                <p>To Date : {match.params.todate}</p>
-                <p>Max Count : {room.maxcount}</p>
-              </b>
-            </div>
-            <div style={{ textAlign: "right" }}>
-              <h1>Amount</h1>
+              <p>{room.rentperday}</p>
               <hr />
-              <b>
-                <p>Total Days : {totalDays}</p>
-                <p>Rent per day : {room.rentperday}</p>
-                <p>Total Amount : {totalAmount}</p>
-              </b>
+              <p>{totalAmount}</p>
+              <hr />
+              </div>
             </div>
-
-            <div style={{ float: "right" }}>
-              <StripeCheckout
-                amount={totalAmount * 100}
-                currency="USD"
-                token={onToken}
-                stripeKey="pk_test_51P7ZnvJVkX5vtZzarkv6mKkHI17DW1BVhycTaXLK5lXuKcIdfTCBOjvhFbiRjP7XHiXctd1wAueZ8vKkXkkw74dZ00IE6ptG4h"
-              >
-                <button className="btn btn-primary">Pay Now</button>
-              </StripeCheckout>
-            </div>
+            <StripeCheckout
+              amount={totalAmount * 100}
+              currency="USD"
+              token={onToken}
+              stripeKey="pk_test_51P7ZnvJVkX5vtZzarkv6mKkHI17DW1BVhycTaXLK5lXuKcIdfTCBOjvhFbiRjP7XHiXctd1wAueZ8vKkXkkw74dZ00IE6ptG4h"
+              className="stripe-button"
+            >
+              <button className="payButton btn-primary">Pay Now</button>
+            </StripeCheckout>
+            <button className="home-button" onClick={redirecttoHome}>Home</button>
           </div>
         </div>
       )}
-    </div>
+    </main>
   );
 }
 
